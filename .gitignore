@@ -20,7 +20,6 @@ coverage
 jspm_packages/
 junit.xml
 lerna-debug.log*
-lib
 lib-cov
 logs
 node_modules/

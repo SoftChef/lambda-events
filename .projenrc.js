@@ -1,6 +1,6 @@
-const { TypeScriptProject, NpmAccess, ProjectType } = require('projen');
+const { TypeScriptAppProject, NpmAccess, ProjectType } = require('projen');
 
-const project = new TypeScriptProject({
+const project = new TypeScriptAppProject({
   author: 'softchef-iot-lab',
   authorName: 'MinChe Tsai',
   authorEmail: 'poke@softchef.com',
@@ -9,20 +9,16 @@ const project = new TypeScriptProject({
   projenVersion: '0.24.7',
   initialVersion: '0.0.0',
   defaultReleaseBranch: 'main',
-  jsiiFqn: 'projen.TypeScriptProject',
+  jsiiFqn: 'projen.TypeScriptAppProject',
   name: '@softchef/lambda-events',
   repositoryUrl: 'https://github.com/SoftChef/lambda-events.git',
+  release: true,
+  releaseToNpm: true,
   deps: [
     '@aws-sdk/client-cognito-identity-provider',
     '@types/semver',
     'joi',
     'semver',
-  ],
-  gitignore: [
-    'lib',
-  ],
-  npmignore: [
-    '/src',
   ],
 });
 
