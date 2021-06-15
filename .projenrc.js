@@ -14,6 +14,7 @@ const project = new TypeScriptAppProject({
   repositoryUrl: 'https://github.com/SoftChef/lambda-events.git',
   release: true,
   releaseToNpm: true,
+  package: true,
   deps: [
     '@aws-sdk/client-cognito-identity-provider',
     '@types/semver',
