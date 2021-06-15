@@ -42,7 +42,6 @@
     "ts-jest": "^27.0.3",
     "typescript": "^4.3.2"
   },
-  "peerDependencies": {},
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.18.0",
     "@types/semver": "^7.3.6",
