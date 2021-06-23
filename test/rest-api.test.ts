@@ -1,7 +1,7 @@
-import { Request, Response } from '../src/restapi';
+import { RestApi } from '../src';
 
 test('Verify request parameter with path parameters expect success', () => {
-  const request = new Request({
+  const request = new RestApi.Request({
     pathParameters: {
       id: '123',
     },
@@ -12,7 +12,7 @@ test('Verify request parameter with path parameters expect success', () => {
 });
 
 test('Verify request get with query string parameters expect success', () => {
-  const request = new Request({
+  const request = new RestApi.Request({
     queryStringParameters: {
       search: 'value',
     },
@@ -26,7 +26,7 @@ test('Verify request get with query string parameters expect success', () => {
 });
 
 test('Verify request input with body expect success', () => {
-  const request = new Request({
+  const request = new RestApi.Request({
     queryStringParameters: {
       query: 'value',
     },
@@ -48,7 +48,7 @@ test('Verify request input with body expect success', () => {
 });
 
 test('Verify request inputs with body expect success', () => {
-  const request = new Request({
+  const request = new RestApi.Request({
     queryStringParameters: {
       query: 'value',
     },
@@ -72,14 +72,14 @@ test('Verify request inputs with body expect success', () => {
 });
 
 test('Verify request inputs with invalid body expect failure', () => {
-  const request = new Request({
+  const request = new RestApi.Request({
     body: 'Invalid JSON string',
   });
   expect(request.body).toEqual({});
 });
 
 test('Verify request has key expect success', () => {
-  const request = new Request({
+  const request = new RestApi.Request({
     queryStringParameters: {
       search: 'hello',
     },
@@ -101,7 +101,7 @@ test('Verify request has key expect success', () => {
 });
 
 test('Verify request header expect success', () => {
-  const request = new Request({
+  const request = new RestApi.Request({
     headers: {
       'content-type': 'application/json',
     },
@@ -116,7 +116,7 @@ test('Verify request validate with body expect success', () => {
     name: 'John',
     description: 'This is a John',
   };
-  const request = new Request({
+  const request = new RestApi.Request({
     body: JSON.stringify(expectedData),
   });
   const validated = request.validate(joi => {
@@ -129,7 +129,7 @@ test('Verify request validate with body expect success', () => {
 });
 
 test('Verify request validate failure', () => {
-  const request = new Request();
+  const request = new RestApi.Request();
   const validated = request.validate(joi => {
     return {
       name: joi.string().required(),
@@ -154,18 +154,8 @@ test('Verify request validate failure', () => {
   ]);
 });
 
-// test('Verify validate aws region success', () => {
-//   const request = new Request();
-//   const validated = request.validate(joi => {
-//     return {
-//       awsRegion: joi.awsRegion().required(),
-//       version: joi.semanticVersion().required(),
-//     };
-//   });
-// });
-
 test('Verify response json success', () => {
-  const response = new Response();
+  const response = new RestApi.Response();
   const expectJsonData = {
     tested: true,
   };
@@ -177,7 +167,7 @@ test('Verify response json success', () => {
 });
 
 test('Verify response json error', () => {
-  const response = new Response();
+  const response = new RestApi.Response();
   const expectJsonErrorData = {
     error: true,
   };
@@ -189,7 +179,7 @@ test('Verify response json error', () => {
 });
 
 test('Verify response error', () => {
-  const response = new Response();
+  const response = new RestApi.Response();
   const expectErrorMessage = 'error';
   let responseError = response.error(expectErrorMessage, 500);
   expect(responseError.statusCode).toEqual(500);
@@ -201,13 +191,13 @@ test('Verify response error', () => {
 });
 
 test('Verify response not found', () => {
-  const response = new Response();
+  const response = new RestApi.Response();
   let responseNotFound = response.notFound();
   expect(responseNotFound.statusCode).toEqual(404);
 });
 
 test('Verify response has cors', () => {
-  const response = new Response();
+  const response = new RestApi.Response();
   response.setCors(true);
   let responseSuccess = response.json({}, 200);
   expect(
@@ -222,7 +212,7 @@ test('Verify response has cors', () => {
 });
 
 test('Verify response not cors', () => {
-  const response = new Response();
+  const response = new RestApi.Response();
   response.setCors(false);
   let responseSuccess = response.json({}, 200);
   expect(

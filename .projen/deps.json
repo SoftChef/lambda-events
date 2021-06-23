@@ -74,7 +74,20 @@
       "type": "runtime"
     },
     {
+      "name": "@types/node",
+      "version": "15.12.2",
+      "type": "runtime"
+    },
+    {
       "name": "@types/semver",
+      "type": "runtime"
+    },
+    {
+      "name": "@types/sinon",
+      "type": "runtime"
+    },
+    {
+      "name": "axios",
       "type": "runtime"
     },
     {
@@ -83,6 +96,10 @@
     },
     {
       "name": "semver",
+      "type": "runtime"
+    },
+    {
+      "name": "sinon",
       "type": "runtime"
     }
   ],

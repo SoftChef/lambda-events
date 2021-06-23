@@ -1,7 +1,7 @@
 /**
  * API Gateway Response
  */
-export class Response {
+export class RestApiResponse {
 
   public cors: boolean;
 

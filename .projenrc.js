@@ -18,10 +18,19 @@ const project = new TypeScriptAppProject({
   entrypoint: 'lib/index.js',
   deps: [
     '@aws-sdk/client-cognito-identity-provider',
+    '@types/node@15.12.2',
     '@types/semver',
     'joi',
     'semver',
+    'sinon',
+    '@types/sinon',
+    'axios',
   ],
+  tsconfig: {
+    compilerOptions: {
+      moduleResolution: 'node',
+    },
+  },
 });
 
 project.synth();

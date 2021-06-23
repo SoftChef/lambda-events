@@ -1,2 +1,2 @@
-export * from './restapi/request';
-export * from './restapi/response';
+export * from './restapi';
+export * from './custom-resource';

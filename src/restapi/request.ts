@@ -5,7 +5,7 @@ import { extensions } from './validator';
 /**
  * API Gateway Request
  */
-export class Request {
+export class RestApiRequest {
 
   public readonly event: {
     headers?: { [key: string]: string };
