@@ -20,7 +20,7 @@ export namespace CustomResource {
 
   export class Request {
 
-    public readonly event: { [key: string]: any };
+    public readonly event: EventProps;
 
     constructor(event: EventProps) {
       this.event = event;
@@ -60,13 +60,13 @@ export namespace CustomResource {
 
   export class Response {
 
-    public readonly event: { [key: string]: any };
+    public readonly event: EventProps;
 
-    constructor(event: { [key: string]: any }) {
+    constructor(event: EventProps) {
       this.event = event;
     }
 
-    public success(data: { [key: string]: string }): Promise<{}> {
+    public async success(data: { [key: string]: string }): Promise<{}> {
       return this.send(data, null);
     }
 
