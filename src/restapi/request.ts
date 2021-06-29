@@ -54,24 +54,29 @@ export class RestApiRequest {
       Joi.extend(extension);
     }
   }
-  parameter(key: string): string {
+
+  public parameter(key: string): string {
     let parameter = this.parameters[key] ?? null;
     if (parameter) {
       parameter = decodeURI(parameter);
     }
     return parameter;
   }
-  get(key: string, defaultValue: any = null): any {
+
+  public get(key: string, defaultValue?: any): any {
     let result = this.queries[key];
     if (result === undefined) {
-      result = defaultValue;
+      result = defaultValue ?? null;
     }
     return result;
   }
-  input(key: string, defaultValue: any = null): any {
+  input(key: string, defaultValue?: any): any {
     let result = this.body[key];
     if (result === undefined) {
-      result = this.queries[key] ?? defaultValue;
+      result = this.queries[key];
+    }
+    if (result === undefined) {
+      result = defaultValue ?? null;
     }
     return result;
   }
@@ -151,9 +156,11 @@ export class RestApiRequest {
   }
 
   validate(keysProvider: (Joi: Joi.Root) => any, options: Object = {}) {
-    const keys = keysProvider(Joi);
-    const schema = Joi.object().keys(keys);
-    const result = schema.validate(
+    const keys: {
+      [key: string]: Joi.Schema<any>;
+    } = keysProvider(Joi);
+    const schema: Joi.ObjectSchema<any> = Joi.object().keys(keys);
+    const result: Joi.ValidationResult = schema.validate(
       this.inputs(
         Object.keys(keys),
       ),
