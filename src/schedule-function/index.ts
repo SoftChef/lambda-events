@@ -23,8 +23,8 @@ export namespace ScheduleFunction {
 
     private readonly _event: EventProps;
 
-    constructor(event: EventProps) {
-      this._event = event;
+    constructor(event: { [key: string]: any }) {
+      this._event = event as EventProps;
     }
 
     public context(key?: string): any {
@@ -66,8 +66,8 @@ export namespace ScheduleFunction {
 
     private readonly _event: EventProps;
 
-    constructor(event: EventProps) {
-      this._event = event;
+    constructor(event: { [key: string]: any }) {
+      this._event = event as EventProps;
     }
 
     public success(result: { [key: string]: any }): ResponseProps {

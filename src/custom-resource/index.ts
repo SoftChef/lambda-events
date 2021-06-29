@@ -20,10 +20,10 @@ export namespace CustomResource {
 
   export class Request {
 
-    public readonly event: EventProps;
+    public readonly _event: EventProps;
 
-    constructor(event: EventProps) {
-      this.event = event;
+    constructor(event: { [key: string]: any }) {
+      this._event = event as EventProps;
     }
 
     public on(types: string | string[]): boolean {
@@ -33,16 +33,16 @@ export namespace CustomResource {
       return types.map(type => {
         return type.toLowerCase();
       }).indexOf(
-        this.event.RequestType.toLowerCase(),
+        this._event.RequestType.toLowerCase(),
       ) > -1;
     }
 
     public requestType(): string {
-      return this.event.RequestType;
+      return this._event.RequestType;
     }
 
     public properties(): { [key: string]: string } {
-      return this.event.ResourceProperties ?? {};
+      return this._event.ResourceProperties ?? {};
     }
 
     public property(key: string): string | null {
@@ -50,7 +50,7 @@ export namespace CustomResource {
     }
 
     public oldProperties(): { [key: string]: string } {
-      return this.event.OldResourceProperties ?? {};
+      return this._event.OldResourceProperties ?? {};
     }
 
     public oldProperty(key: string): string | null {
@@ -60,10 +60,10 @@ export namespace CustomResource {
 
   export class Response {
 
-    public readonly event: EventProps;
+    private readonly _event: EventProps;
 
-    constructor(event: EventProps) {
-      this.event = event;
+    constructor(event: { [key: string]: any }) {
+      this._event = event as EventProps;
     }
 
     public async success(data: { [key: string]: string }): Promise<{}> {
@@ -78,13 +78,13 @@ export namespace CustomResource {
       const responseBody = JSON.stringify({
         Status: error ? 'FAILED' : 'SUCCESS',
         Reason: error ? error.toString() : 'Success',
-        PhysicalResourceId: this.event.PhysicalResourceId ?? this.event.RequestId,
-        StackId: this.event.StackId,
-        RequestId: this.event.RequestId,
-        LogicalResourceId: this.event.LogicalResourceId,
+        PhysicalResourceId: this._event.PhysicalResourceId ?? this._event.RequestId,
+        StackId: this._event.StackId,
+        RequestId: this._event.RequestId,
+        LogicalResourceId: this._event.LogicalResourceId,
         Data: data,
       });
-      return axios.put(this.event.ResponseURL, responseBody);
+      return axios.put(this._event.ResponseURL, responseBody);
     }
   }
 }

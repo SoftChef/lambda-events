@@ -7,7 +7,7 @@ import { extensions } from './validator';
  */
 export class RestApiRequest {
 
-  public readonly event: {
+  public readonly _event: {
     headers?: { [key: string]: string };
     pathParameters?: { [key: string]: string };
     queryStringParameters?: { [key: string]: string };
@@ -36,19 +36,19 @@ export class RestApiRequest {
   };
 
   constructor(event?: { [key: string]: any }) {
-    this.event = event ?? {};
-    this.headers = this.event.headers ?? {};
-    this.parameters = this.event.pathParameters ?? {};
-    this.queries = this.event.queryStringParameters ?? {};
-    this.requestContext = this.event.requestContext ?? {};
-    if (typeof this.event.body === 'string') {
+    this._event = (event ?? {});
+    this.headers = this._event.headers ?? {};
+    this.parameters = this._event.pathParameters ?? {};
+    this.queries = this._event.queryStringParameters ?? {};
+    this.requestContext = this._event.requestContext ?? {};
+    if (typeof this._event.body === 'string') {
       try {
-        this.body = JSON.parse(this.event.body) ?? {};
+        this.body = JSON.parse(this._event.body) ?? {};
       } catch (error) {
         this.body = {};
       }
     } else {
-      this.body = this.event.body ?? {};
+      this.body = this._event.body ?? {};
     }
     for (const extension of extensions) {
       Joi.extend(extension);
