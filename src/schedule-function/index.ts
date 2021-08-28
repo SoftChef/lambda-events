@@ -23,7 +23,7 @@ export namespace ScheduleFunction {
 
     private readonly _event: EventProps;
 
-    constructor(event: { [key: string]: any }) {
+    constructor(event: Object) {
       this._event = event as EventProps;
     }
 
@@ -66,11 +66,11 @@ export namespace ScheduleFunction {
 
     private readonly _event: EventProps;
 
-    constructor(event: { [key: string]: any }) {
+    constructor(event: Object) {
       this._event = event as EventProps;
     }
 
-    public success(result: { [key: string]: any }): ResponseProps {
+    public success(result: Object): ResponseProps {
       return {
         scheduleId: this._event.scheduleId,
         success: true,
@@ -78,7 +78,7 @@ export namespace ScheduleFunction {
       };
     }
 
-    public failed(error: { [key: string]: any } | Error): ResponseProps {
+    public failed(error: Object | Error): ResponseProps {
       return {
         scheduleId: this._event.scheduleId,
         success: false,
