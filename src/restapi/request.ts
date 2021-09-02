@@ -134,20 +134,6 @@ export class RestApiRequest {
             }),
           );
           return cognitoUser;
-          // const attributes: { [key: string]: any } = {};
-          // if (Array.isArray(cognitoUser.UserAttributes)) {
-          //   for (const attribute of cognitoUser.UserAttributes) {
-          //     attributes[attribute.Name] = attribute.Value;
-          //   }
-          // }
-          // return {
-          //   enabled: user.Enabled ?? null,
-          //   createdAt: user.UserCreateDate ?? null,
-          //   updatedAt: user.UserLastModifiedDate ?? null,
-          //   status: user.UserStatus ?? null,
-          //   username: user.Username ?? null,
-          //   ...attributes,
-          // };
         }
       }
     } catch (error) {
