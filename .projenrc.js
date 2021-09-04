@@ -17,9 +17,9 @@ const project = new TypeScriptAppProject({
   releaseToNpm: true,
   package: true,
   entrypoint: 'lib/index.js',
+  minNodeVersion: '14.15.0',
   deps: [
     '@aws-sdk/client-cognito-identity-provider',
-    '@types/node@15.12.2',
     '@types/semver',
     '@types/sinon',
     'axios',

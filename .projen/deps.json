@@ -6,7 +6,7 @@
     },
     {
       "name": "@types/node",
-      "version": "^10.17.0",
+      "version": "^14.15.0",
       "type": "build"
     },
     {
@@ -71,11 +71,6 @@
     },
     {
       "name": "@aws-sdk/client-cognito-identity-provider",
-      "type": "runtime"
-    },
-    {
-      "name": "@types/node",
-      "version": "15.12.2",
       "type": "runtime"
     },
     {
