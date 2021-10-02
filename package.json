@@ -47,7 +47,7 @@
     "@aws-sdk/client-cognito-identity-provider": "^3.34.0",
     "@types/semver": "^7.3.8",
     "@types/sinon": "^10.0.4",
-    "axios": "^0.21.4",
+    "axios": "^0.22.0",
     "joi": "^17.4.2",
     "semver": "^7.3.5",
     "sinon": "^11.1.2"
