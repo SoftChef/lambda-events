@@ -1,3 +1,9 @@
+# Lambda Events
+
+[![npm version](https://badge.fury.io/js/%40softchef%2Flambda-events.svg)](https://badge.fury.io/js/%40softchef%2Flambda-events)
+![Release](https://github.com/SoftChef/lambda-events/workflows/Release/badge.svg)
+![npm](https://img.shields.io/npm/dt/@softchef/lambda-events?label=NPM%20Downloads&color=orange)
+
 ## Installation
 
 ```
