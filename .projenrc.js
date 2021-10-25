@@ -1,4 +1,4 @@
-const { TypeScriptAppProject, NpmAccess, ProjectType } = require('projen');
+const { TypeScriptAppProject, NpmAccess } = require('projen');
 
 const AUTOMATION_TOKEN = 'PROJEN_GITHUB_TOKEN';
 
@@ -7,9 +7,6 @@ const project = new TypeScriptAppProject({
   authorName: 'MinChe Tsai',
   authorEmail: 'poke@softchef.com',
   npmAccess: NpmAccess.PUBLIC,
-  projectType: ProjectType.LIB,
-  projenVersion: '0.27.0',
-  majorVersion: 1,
   defaultReleaseBranch: 'main',
   name: '@softchef/lambda-events',
   repositoryUrl: 'https://github.com/SoftChef/lambda-events.git',
@@ -17,7 +14,8 @@ const project = new TypeScriptAppProject({
   releaseToNpm: true,
   package: true,
   entrypoint: 'lib/index.js',
-  minNodeVersion: '14.15.0',
+  minNodeVersion: '12.7.0',
+  workflowNodeVersion: '12.13.0',
   deps: [
     '@aws-sdk/client-cognito-identity-provider',
     '@types/semver',
@@ -40,6 +38,10 @@ const project = new TypeScriptAppProject({
   },
   tsconfig: {
     compilerOptions: {
+      lib: [
+        'ES2020',
+        'DOM',
+      ],
       moduleResolution: 'node',
     },
   },
