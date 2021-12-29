@@ -10,14 +10,13 @@
     "package": "npx projen package",
     "post-compile": "npx projen post-compile",
     "pre-compile": "npx projen pre-compile",
-    "publish:github": "npx projen publish:github",
-    "publish:npm": "npx projen publish:npm",
     "release": "npx projen release",
     "test": "npx projen test",
     "test:update": "npx projen test:update",
     "test:watch": "npx projen test:watch",
     "unbump": "npx projen unbump",
     "upgrade": "npx projen upgrade",
+    "upgrade-projen": "npx projen upgrade-projen",
     "watch": "npx projen watch",
     "projen": "npx projen"
   },
@@ -27,41 +26,35 @@
     "organization": false
   },
   "devDependencies": {
-    "@types/jest": "^26.0.24",
-    "@types/node": "^12.7.0",
-    "@typescript-eslint/eslint-plugin": "^4.33.0",
-    "@typescript-eslint/parser": "^4.33.0",
-    "eslint": "^7.32.0",
+    "@types/jest": "*",
+    "@types/node": "^12",
+    "@typescript-eslint/eslint-plugin": "^5",
+    "@typescript-eslint/parser": "^5",
+    "eslint": "^8",
     "eslint-import-resolver-node": "^0.3.6",
     "eslint-import-resolver-typescript": "^2.5.0",
     "eslint-plugin-import": "^2.25.3",
-    "jest": "^27.4.3",
-    "jest-junit": "^12",
+    "jest": "^27.4.5",
+    "jest-junit": "^13",
     "json-schema": "^0.4.0",
-    "npm-check-updates": "^11",
-    "projen": "^0.36.0",
+    "npm-check-updates": "^12",
+    "projen": "0.45.4",
     "standard-version": "^9",
-    "ts-jest": "^27.0.7",
-    "typescript": "^4.5.2"
+    "ts-jest": "^27.1.2",
+    "typescript": "^4.5.4"
   },
   "dependencies": {
-    "@aws-sdk/client-cognito-identity-provider": "^3.43.0",
+    "@aws-sdk/client-cognito-identity-provider": "^3.45.0",
     "@types/semver": "^7.3.9",
     "@types/sinon": "^10.0.6",
     "axios": "^0.24.0",
-    "joi": "^17.4.3",
+    "joi": "^17.5.0",
     "semver": "^7.3.5",
-    "sinon": "^11.1.2"
+    "sinon": "*"
   },
   "bundledDependencies": [],
-  "engines": {
-    "node": ">= 12.7.0"
-  },
   "main": "lib/index.js",
   "license": "Apache-2.0",
-  "publishConfig": {
-    "access": "public"
-  },
   "version": "0.0.0",
   "jest": {
     "testMatch": [

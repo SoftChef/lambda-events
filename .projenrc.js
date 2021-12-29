@@ -1,12 +1,11 @@
-const { TypeScriptAppProject, NpmAccess } = require('projen');
+const { typescript } = require('projen');
 
 const AUTOMATION_TOKEN = 'PROJEN_GITHUB_TOKEN';
 
-const project = new TypeScriptAppProject({
+const project = new typescript.TypeScriptAppProject({
   author: 'SoftChef',
   authorName: 'MinChe Tsai',
   authorEmail: 'poke@softchef.com',
-  npmAccess: NpmAccess.PUBLIC,
   defaultReleaseBranch: 'main',
   name: '@softchef/lambda-events',
   repositoryUrl: 'https://github.com/SoftChef/lambda-events.git',
@@ -14,8 +13,6 @@ const project = new TypeScriptAppProject({
   releaseToNpm: true,
   package: true,
   entrypoint: 'lib/index.js',
-  minNodeVersion: '12.7.0',
-  workflowNodeVersion: '12.13.0',
   deps: [
     '@aws-sdk/client-cognito-identity-provider',
     '@types/semver',
@@ -26,7 +23,7 @@ const project = new TypeScriptAppProject({
     'sinon',
   ],
   depsUpgradeOptions: {
-    ignoreProjen: false,
+    ignoreProjen: true,
     workflowOptions: {
       labels: ['auto-approve', 'auto-merge'],
       secret: AUTOMATION_TOKEN,
