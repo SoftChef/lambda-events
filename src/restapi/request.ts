@@ -21,11 +21,11 @@ export class RestApiRequest {
 
   public readonly parameters: {
     [key: string]: string;
-  }
+  };
 
   public readonly queries: {
     [key: string]: string;
-  }
+  };
 
   public readonly body: {
     [key: string]: any;
