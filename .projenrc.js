@@ -36,7 +36,7 @@ const project = new typescript.TypeScriptAppProject({
   tsconfig: {
     compilerOptions: {
       lib: [
-        'es2018',
+        'ES2020',
         'DOM',
       ],
       moduleResolution: 'node',

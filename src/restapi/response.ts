@@ -1,3 +1,11 @@
+export interface RestApiResponseOutput {
+  readonly headers: {
+    [key: string]: any;
+  };
+  readonly body: any;
+  readonly statusCode: number;
+}
+
 /**
  * API Gateway Response
  */
@@ -42,7 +50,12 @@ export class RestApiResponse {
     return this.build({}, 404);
   }
 
-  build(body: any, statusCode: number = 200, contentType: string = 'application/json', headers: { [key: string]: string } = {}) {
+  build(
+    body: any = {},
+    statusCode: number = 200,
+    contentType: string = 'application/json',
+    headers: { [key: string]: any} = {},
+  ): RestApiResponseOutput {
     headers['Content-Type'] = `${contentType};charset=utf-8`;
     if (this.cors) {
       headers['Access-Control-Allow-Origin'] = '*';

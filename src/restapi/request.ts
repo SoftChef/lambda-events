@@ -1,6 +1,11 @@
-import { CognitoIdentityProviderClient, AdminGetUserCommand } from '@aws-sdk/client-cognito-identity-provider';
+import {
+  CognitoIdentityProviderClient,
+  AdminGetUserCommand,
+} from '@aws-sdk/client-cognito-identity-provider';
 import * as Joi from 'joi';
-import { extensions } from './validator';
+import {
+  extensions,
+} from './validator';
 
 /**
  * API Gateway Request
@@ -141,7 +146,15 @@ export class RestApiRequest {
     }
   }
 
-  validate(keysProvider: (Joi: Joi.Root) => any, options: Object = {}) {
+  validate(keysProvider: (Joi: Joi.Root) => any, options: Object = {}): {
+    error: boolean;
+    details: {
+      key: string;
+      label: string;
+      value: any;
+      message: string;
+    }[];
+  } {
     const keys: {
       [key: string]: Joi.Schema<any>;
     } = keysProvider(Joi);
@@ -156,12 +169,17 @@ export class RestApiRequest {
       },
     );
     let details: {
-      [key: string]: string;
+      key: string;
+      label: string;
+      value: any;
+      message: string;
     }[] = [];
     if (result.error) {
       for (let detail of result.error.details) {
         details.push({
-          ...detail.context,
+          key: detail.context?.key ?? '',
+          label: detail.context?.label ?? '',
+          value: detail.context?.value ?? null,
           message: detail.message,
         });
       }
