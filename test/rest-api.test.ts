@@ -1,4 +1,23 @@
+import {
+  AdminGetUserCommand,
+  CognitoIdentityProviderClient,
+} from '@aws-sdk/client-cognito-identity-provider';
+import {
+  mockClient,
+} from 'aws-sdk-client-mock';
 import { RestApi } from '../src';
+
+const expectedUser = {
+  sub: '461b4f73-8aed-4fcd-bdc3-7da9711e2d1d',
+  name: 'test',
+  phoneNumber: '+886227935578',
+  email: 'test@softchef.com',
+  emailVerified: true,
+  enabled: true,
+  status: 'CONFIRMED',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
 
 test('Verify request parameter with path parameters expect success', () => {
   const request = new RestApi.Request({
@@ -152,6 +171,65 @@ test('Verify request validate failure', () => {
       message: expect.any(String),
     },
   ]);
+});
+
+test('Verify get user with Cognito', async () => {
+  const request = new RestApi.Request({
+    requestContext: {
+      authorizer: {
+        claims: JSON.stringify({
+          sub: expectedUser.sub,
+        }),
+        identity: 'default',
+      },
+    },
+  });
+  const user = await request.user();
+  expect(user).toEqual({
+    username: expectedUser.sub,
+    sub: expectedUser.sub,
+    identity: 'default',
+  });
+});
+
+test('Verify get user with AWS_IAM', async () => {
+  const mockCognitoIdentityProviderClientClient = mockClient(CognitoIdentityProviderClient);
+  mockCognitoIdentityProviderClientClient.on(AdminGetUserCommand).resolves({
+    Username: expectedUser.sub,
+    UserAttributes: [
+      { Name: 'sub', Value: expectedUser.sub },
+      { Name: 'name', Value: expectedUser.name },
+      { Name: 'phone_number', Value: expectedUser.phoneNumber },
+      { Name: 'email', Value: expectedUser.email },
+      { Name: 'email_verified', Value: `${expectedUser.emailVerified}` },
+    ],
+    UserMFASettingList: undefined,
+    UserStatus: expectedUser.status,
+    Enabled: expectedUser.enabled,
+    MFAOptions: undefined,
+    PreferredMfaSetting: undefined,
+    UserCreateDate: expectedUser.createdAt,
+    UserLastModifiedDate: expectedUser.updatedAt,
+  });
+  const request = new RestApi.Request({
+    requestContext: {
+      identity: {
+        cognitoAuthenticationProvider: `cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_xxxxxxx,cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_xxxxxx:CognitoSignIn:${expectedUser.sub}`,
+      },
+    },
+  });
+  const user = await request.user();
+  expect(user).toEqual({
+    username: expectedUser.sub,
+    enabled: expectedUser.enabled,
+    status: expectedUser.status,
+    sub: expectedUser.sub,
+    name: expectedUser.name,
+    phone_number: expectedUser.phoneNumber,
+    email: expectedUser.email,
+    email_verified: `${expectedUser.emailVerified}`,
+  });
+  mockCognitoIdentityProviderClientClient.restore();
 });
 
 test('Verify response json success', () => {
