@@ -1,6 +1,7 @@
 import {
   CognitoIdentityProviderClient,
   AdminGetUserCommand,
+  AdminGetUserCommandOutput,
 } from '@aws-sdk/client-cognito-identity-provider';
 import * as Joi from 'joi';
 import {
@@ -12,7 +13,7 @@ import {
  */
 export class RestApiRequest {
 
-  public readonly _event: {
+  public readonly event: {
     headers?: { [key: string]: string };
     pathParameters?: { [key: string]: string };
     queryStringParameters?: { [key: string]: string };
@@ -41,19 +42,19 @@ export class RestApiRequest {
   };
 
   constructor(event?: { [key: string]: any }) {
-    this._event = (event ?? {});
-    this.headers = this._event.headers ?? {};
-    this.parameters = this._event.pathParameters ?? {};
-    this.queries = this._event.queryStringParameters ?? {};
-    this.requestContext = this._event.requestContext ?? {};
-    if (typeof this._event.body === 'string') {
+    this.event = (event ?? {});
+    this.headers = this.event.headers ?? {};
+    this.parameters = this.event.pathParameters ?? {};
+    this.queries = this.event.queryStringParameters ?? {};
+    this.requestContext = this.event.requestContext ?? {};
+    if (typeof this.event.body === 'string') {
       try {
-        this.body = JSON.parse(this._event.body) ?? {};
+        this.body = JSON.parse(this.event.body) ?? {};
       } catch (error) {
         this.body = {};
       }
     } else {
-      this.body = this._event.body ?? {};
+      this.body = this.event.body ?? {};
     }
     for (const extension of extensions) {
       Joi.extend(extension);
@@ -109,14 +110,14 @@ export class RestApiRequest {
   header(key: string): string {
     return this.headers[key] ?? null;
   }
-  async user() {
-    const requestContext = this.requestContext ?? {};
-    let user: { [key: string]: any };
-    try {
+  user(): Promise<{ [key: string]: any }> {
+    return new Promise((resolve, reject): void => {
+      const requestContext = this.requestContext ?? {};
       if (requestContext.authorizer) {
         const authorizer = requestContext.authorizer ?? {};
         const claims = authorizer.claims ?? {};
         const identity = authorizer.identity ?? 'default';
+        let user: { [key: string]: any };
         if (typeof claims === 'string') {
           user = JSON.parse(claims);
         } else {
@@ -124,7 +125,7 @@ export class RestApiRequest {
         }
         user.identity = identity;
         user.username = user['cognito:username'] ?? user.sub;
-        return user;
+        resolve(user);
       } else {
         const identity = requestContext.identity ?? {};
         let authProvider, userPoolId, userSub;
@@ -132,18 +133,30 @@ export class RestApiRequest {
         if (/^.*,[\w.-]*\/(.*):.*:(.*)/.test(authProvider)) {
           [authProvider, userPoolId, userSub] = authProvider.match(/^.*,[\w.-]*\/(.*):.*:(.*)/);
           const cognitoIdentityProviderClient = new CognitoIdentityProviderClient({});
-          const cognitoUser = await cognitoIdentityProviderClient.send(
+          cognitoIdentityProviderClient.send(
             new AdminGetUserCommand({
               UserPoolId: userPoolId,
               Username: userSub,
             }),
-          );
-          return cognitoUser;
+          ).then((user: AdminGetUserCommandOutput) => {
+            const attributes = {};
+            for (const attribute of user.UserAttributes!) {
+              Object.assign(attributes, {
+                [attribute.Name!]: attribute.Value,
+              });
+            }
+            resolve({
+              username: user.Username,
+              ...attributes,
+              enabled: user.Enabled,
+              status: user.UserStatus,
+            });
+          }).catch(reject);
+        } else {
+          resolve({});
         }
       }
-    } catch (error) {
-      return error;
-    }
+    });
   }
 
   validate(keysProvider: (Joi: Joi.Root) => any, options: Object = {}): {

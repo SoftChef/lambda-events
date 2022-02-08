@@ -1,14 +1,11 @@
-const { typescript } = require('projen');
-
-const AUTOMATION_TOKEN = 'PROJEN_GITHUB_TOKEN';
+const { typescript, AUTOMATION_TOKEN } = require('projen');
 
 const project = new typescript.TypeScriptAppProject({
-  author: 'SoftChef',
-  authorName: 'MinChe Tsai',
+  authorName: 'SoftChef',
   authorEmail: 'poke@softchef.com',
-  defaultReleaseBranch: 'main',
   name: '@softchef/lambda-events',
   repositoryUrl: 'https://github.com/SoftChef/lambda-events.git',
+  defaultReleaseBranch: 'main',
   release: true,
   releaseToNpm: true,
   package: true,
@@ -22,8 +19,11 @@ const project = new typescript.TypeScriptAppProject({
     'semver',
     'sinon',
   ],
+  devDeps: [
+    'aws-sdk-client-mock',
+  ],
   depsUpgradeOptions: {
-    ignoreProjen: true,
+    ignoreProjen: false,
     workflowOptions: {
       labels: ['auto-approve', 'auto-merge'],
       secret: AUTOMATION_TOKEN,
