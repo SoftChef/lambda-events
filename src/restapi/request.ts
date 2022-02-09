@@ -110,51 +110,42 @@ export class RestApiRequest {
   header(key: string): string {
     return this.headers[key] ?? null;
   }
-  user(): Promise<{ [key: string]: any }> {
+  user(): Promise<{ [key: string]: any } | null> {
     return new Promise((resolve, reject): void => {
       const requestContext = this.requestContext ?? {};
-      if (requestContext.authorizer) {
-        const authorizer = requestContext.authorizer ?? {};
-        const claims = authorizer.claims ?? {};
-        const identity = authorizer.identity ?? 'default';
-        let user: { [key: string]: any };
+      const authorizer = requestContext.authorizer ?? {};
+      const identity = requestContext.identity ?? null;
+      const claims = authorizer.claims ?? null;
+      const iam = authorizer.iam ?? null;
+      if (claims) {
+        let user: { [key: string]: any } = {};
         if (typeof claims === 'string') {
           user = JSON.parse(claims);
         } else {
           user = claims;
         }
-        user.identity = identity;
+        user.identity = authorizer.identity ?? 'default';;
         user.username = user['cognito:username'] ?? user.sub;
         resolve(user);
-      } else {
-        const identity = requestContext.identity ?? {};
-        let authProvider, userPoolId, userSub;
-        authProvider = identity.cognitoAuthenticationProvider ?? {};
-        if (/^.*,[\w.-]*\/(.*):.*:(.*)/.test(authProvider)) {
-          [authProvider, userPoolId, userSub] = authProvider.match(/^.*,[\w.-]*\/(.*):.*:(.*)/);
-          const cognitoIdentityProviderClient = new CognitoIdentityProviderClient({});
-          cognitoIdentityProviderClient.send(
-            new AdminGetUserCommand({
-              UserPoolId: userPoolId,
-              Username: userSub,
-            }),
-          ).then((user: AdminGetUserCommandOutput) => {
-            const attributes = {};
-            for (const attribute of user.UserAttributes!) {
-              Object.assign(attributes, {
-                [attribute.Name!]: attribute.Value,
-              });
-            }
-            resolve({
-              username: user.Username,
-              ...attributes,
-              enabled: user.Enabled,
-              status: user.UserStatus,
-            });
-          }).catch(reject);
+      } else if (iam) {
+        const cognitoIdentity = iam.cognitoIdentity ?? {};
+        const amr = cognitoIdentity.amr ?? [];
+        const [authenticated, _userPool, identityString] = amr;
+        if (authenticated === 'authenticated') {
+          const [_authProvider, userPoolId, userSub] = identityString.match(/^[\w.-]*\/([\w-_]*):CognitoSignIn:([\w-]*)/) ?? [];
+          getCognitoUser(userPoolId, userSub).then(resolve).catch(reject);
         } else {
-          resolve({});
+          resolve(null);
         }
+      } else if (identity) {
+        if (identity.cognitoAuthenticationType === 'authenticated') {
+          const [_authProvider, userPoolId, userSub] = (identity.cognitoAuthenticationProvider ?? {}).match(/^.*,[\w.-]*\/([\w-_]*):CognitoSignIn:([\w-]*)/) ?? [];
+          getCognitoUser(userPoolId, userSub).then(resolve).catch(reject);
+        } else {
+          resolve(null);
+        }
+      } else {
+        resolve(null);
       }
     });
   }
@@ -202,4 +193,27 @@ export class RestApiRequest {
       details: details,
     };
   }
+}
+
+function getCognitoUser(userPoolId: string, username: string): Promise<{ [key: string]: any }> {
+  return new Promise((resolve, reject) => {
+    let user: { [key: string]: any } = {};
+    const cognitoIdentityProviderClient = new CognitoIdentityProviderClient({});
+    cognitoIdentityProviderClient.send(
+      new AdminGetUserCommand({
+        UserPoolId: userPoolId,
+        Username: username,
+      }),
+    ).then((result: AdminGetUserCommandOutput) => {
+      user.username = result.Username;
+      user.enabled = result.Enabled;
+      user.status = result.UserStatus;
+      for (const attribute of result.UserAttributes!) {
+        Object.assign(user, {
+          [attribute.Name!]: attribute.Value,
+        });
+      }
+      resolve(user);
+    }).catch(reject);
+  });
 }
