@@ -192,7 +192,55 @@ test('Verify get user with Cognito', async () => {
   });
 });
 
-test('Verify get user with AWS_IAM', async () => {
+test('Verify get user with AWS_IAM(authorizer)', async () => {
+  const mockCognitoIdentityProviderClientClient = mockClient(CognitoIdentityProviderClient);
+  mockCognitoIdentityProviderClientClient.on(AdminGetUserCommand).resolves({
+    Username: expectedUser.sub,
+    UserAttributes: [
+      { Name: 'sub', Value: expectedUser.sub },
+      { Name: 'name', Value: expectedUser.name },
+      { Name: 'phone_number', Value: expectedUser.phoneNumber },
+      { Name: 'email', Value: expectedUser.email },
+      { Name: 'email_verified', Value: `${expectedUser.emailVerified}` },
+    ],
+    UserMFASettingList: undefined,
+    UserStatus: expectedUser.status,
+    Enabled: expectedUser.enabled,
+    MFAOptions: undefined,
+    PreferredMfaSetting: undefined,
+    UserCreateDate: expectedUser.createdAt,
+    UserLastModifiedDate: expectedUser.updatedAt,
+  });
+  const request = new RestApi.Request({
+    requestContext: {
+      authorizer: {
+        iam: {
+          cognitoIdentity: {
+            amr: [
+              'authenticated',
+              'cognito-idp.region.amazonaws.com/region_id',
+              `cognito-idp.region.amazonaws.com/region_id:CognitoSignIn:${expectedUser.sub}`,
+            ],
+          },
+        },
+      },
+    },
+  });
+  const user = await request.user();
+  expect(user).toEqual({
+    username: expectedUser.sub,
+    enabled: expectedUser.enabled,
+    status: expectedUser.status,
+    sub: expectedUser.sub,
+    name: expectedUser.name,
+    phone_number: expectedUser.phoneNumber,
+    email: expectedUser.email,
+    email_verified: `${expectedUser.emailVerified}`,
+  });
+  mockCognitoIdentityProviderClientClient.restore();
+});
+
+test('Verify get user with AWS_IAM(identity)', async () => {
   const mockCognitoIdentityProviderClientClient = mockClient(CognitoIdentityProviderClient);
   mockCognitoIdentityProviderClientClient.on(AdminGetUserCommand).resolves({
     Username: expectedUser.sub,
@@ -214,7 +262,8 @@ test('Verify get user with AWS_IAM', async () => {
   const request = new RestApi.Request({
     requestContext: {
       identity: {
-        cognitoAuthenticationProvider: `cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_xxxxxxx,cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_xxxxxx:CognitoSignIn:${expectedUser.sub}`,
+        cognitoAuthenticationType: 'authenticated',
+        cognitoAuthenticationProvider: `cognito-idp.region.amazonaws.com/region_id,cognito-idp.region.amazonaws.com/region_id:CognitoSignIn:${expectedUser.sub}`,
       },
     },
   });
