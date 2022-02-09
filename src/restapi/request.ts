@@ -111,7 +111,7 @@ export class RestApiRequest {
     return this.headers[key] ?? null;
   }
   user(): Promise<{ [key: string]: any } | null> {
-    return new Promise((resolve, reject): void => {
+    return new Promise((resolve, _reject): void => {
       const requestContext = this.requestContext ?? {};
       const authorizer = requestContext.authorizer ?? {};
       const identity = requestContext.identity ?? null;
@@ -133,14 +133,14 @@ export class RestApiRequest {
         const [authenticated, _userPool, identityString] = amr;
         if (authenticated === 'authenticated') {
           const [_authProvider, userPoolId, userSub] = identityString.match(/^[\w.-]*\/([\w-_]*):CognitoSignIn:([\w-]*)/) ?? [];
-          getCognitoUser(userPoolId, userSub).then(resolve).catch(reject);
+          getCognitoUser(userPoolId, userSub).then(resolve).catch((_error) => resolve(null));
         } else {
           resolve(null);
         }
       } else if (identity) {
         if (identity.cognitoAuthenticationType === 'authenticated') {
           const [_authProvider, userPoolId, userSub] = (identity.cognitoAuthenticationProvider ?? {}).match(/^.*,[\w.-]*\/([\w-_]*):CognitoSignIn:([\w-]*)/) ?? [];
-          getCognitoUser(userPoolId, userSub).then(resolve).catch(reject);
+          getCognitoUser(userPoolId, userSub).then(resolve).catch((_error) => resolve(null));
         } else {
           resolve(null);
         }
