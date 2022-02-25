@@ -134,8 +134,8 @@ export class RestApiRequest {
         if (authenticated === 'authenticated') {
           const [_authProvider, userPoolId, userSub] = identityString.match(/^[\w.-]*\/([\w-_]*):CognitoSignIn:([\w-]*)/) ?? [];
           getCognitoUser(userPoolId, userSub).then(resolve).catch((error) => {
-            console.log(error)
-            resolve(null)
+            console.log(error);
+            resolve(null);
           });
         } else {
           resolve(null);
@@ -144,8 +144,8 @@ export class RestApiRequest {
         if (identity.cognitoAuthenticationType === 'authenticated') {
           const [_authProvider, userPoolId, userSub] = (identity.cognitoAuthenticationProvider ?? '').match(/^.*,[\w.-]*\/([\w-_]*):CognitoSignIn:([\w-]*)/) ?? [];
           getCognitoUser(userPoolId, userSub).then(resolve).catch((error) => {
-            console.log(error)
-            resolve(null)
+            console.log(error);
+            resolve(null);
           });
         } else {
           resolve(null);
