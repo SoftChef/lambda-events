@@ -133,14 +133,20 @@ export class RestApiRequest {
         const [authenticated, _userPool, identityString] = amr;
         if (authenticated === 'authenticated') {
           const [_authProvider, userPoolId, userSub] = identityString.match(/^[\w.-]*\/([\w-_]*):CognitoSignIn:([\w-]*)/) ?? [];
-          getCognitoUser(userPoolId, userSub).then(resolve).catch((_error) => resolve(null));
+          getCognitoUser(userPoolId, userSub).then(resolve).catch((error) => {
+            console.log(error)
+            resolve(null)
+          });
         } else {
           resolve(null);
         }
       } else if (identity) {
         if (identity.cognitoAuthenticationType === 'authenticated') {
-          const [_authProvider, userPoolId, userSub] = (identity.cognitoAuthenticationProvider ?? {}).match(/^.*,[\w.-]*\/([\w-_]*):CognitoSignIn:([\w-]*)/) ?? [];
-          getCognitoUser(userPoolId, userSub).then(resolve).catch((_error) => resolve(null));
+          const [_authProvider, userPoolId, userSub] = (identity.cognitoAuthenticationProvider ?? '').match(/^.*,[\w.-]*\/([\w-_]*):CognitoSignIn:([\w-]*)/) ?? [];
+          getCognitoUser(userPoolId, userSub).then(resolve).catch((error) => {
+            console.log(error)
+            resolve(null)
+          });
         } else {
           resolve(null);
         }
