@@ -1,5 +1,5 @@
 import {
-  AdminGetUserCommand,
+  ListUsersCommand,
   CognitoIdentityProviderClient,
 } from '@aws-sdk/client-cognito-identity-provider';
 import {
@@ -18,6 +18,8 @@ const expectedUser = {
   createdAt: new Date(),
   updatedAt: new Date(),
 };
+
+const userPoolId = 'ap-northeast-2_er781dw';
 
 test('Verify request parameter with path parameters expect success', () => {
   const request = new RestApi.Request({
@@ -194,22 +196,27 @@ test('Verify get user with Cognito', async () => {
 
 test('Verify get user with AWS_IAM(authorizer)', async () => {
   const mockCognitoIdentityProviderClientClient = mockClient(CognitoIdentityProviderClient);
-  mockCognitoIdentityProviderClientClient.on(AdminGetUserCommand).resolves({
-    Username: expectedUser.sub,
-    UserAttributes: [
-      { Name: 'sub', Value: expectedUser.sub },
-      { Name: 'name', Value: expectedUser.name },
-      { Name: 'phone_number', Value: expectedUser.phoneNumber },
-      { Name: 'email', Value: expectedUser.email },
-      { Name: 'email_verified', Value: `${expectedUser.emailVerified}` },
+  mockCognitoIdentityProviderClientClient.on(ListUsersCommand, {
+    UserPoolId: userPoolId,
+    Filter: `sub = \"${expectedUser.sub}\"`,
+  }).resolves({
+    Users: [
+      {
+        Username: expectedUser.sub,
+        Attributes: [
+          { Name: 'sub', Value: expectedUser.sub },
+          { Name: 'name', Value: expectedUser.name },
+          { Name: 'phone_number', Value: expectedUser.phoneNumber },
+          { Name: 'email', Value: expectedUser.email },
+          { Name: 'email_verified', Value: `${expectedUser.emailVerified}` },
+        ],
+        UserStatus: expectedUser.status,
+        Enabled: expectedUser.enabled,
+        MFAOptions: undefined,
+        UserCreateDate: expectedUser.createdAt,
+        UserLastModifiedDate: expectedUser.updatedAt,
+      },
     ],
-    UserMFASettingList: undefined,
-    UserStatus: expectedUser.status,
-    Enabled: expectedUser.enabled,
-    MFAOptions: undefined,
-    PreferredMfaSetting: undefined,
-    UserCreateDate: expectedUser.createdAt,
-    UserLastModifiedDate: expectedUser.updatedAt,
   });
   const request = new RestApi.Request({
     requestContext: {
@@ -218,8 +225,8 @@ test('Verify get user with AWS_IAM(authorizer)', async () => {
           cognitoIdentity: {
             amr: [
               'authenticated',
-              'cognito-idp.region.amazonaws.com/region_id',
-              `cognito-idp.region.amazonaws.com/region_id:CognitoSignIn:${expectedUser.sub}`,
+              `cognito-idp.region.amazonaws.com/${userPoolId}`,
+              `cognito-idp.region.amazonaws.com/${userPoolId}:CognitoSignIn:${expectedUser.sub}`,
             ],
           },
         },
@@ -242,28 +249,33 @@ test('Verify get user with AWS_IAM(authorizer)', async () => {
 
 test('Verify get user with AWS_IAM(identity)', async () => {
   const mockCognitoIdentityProviderClientClient = mockClient(CognitoIdentityProviderClient);
-  mockCognitoIdentityProviderClientClient.on(AdminGetUserCommand).resolves({
-    Username: expectedUser.sub,
-    UserAttributes: [
-      { Name: 'sub', Value: expectedUser.sub },
-      { Name: 'name', Value: expectedUser.name },
-      { Name: 'phone_number', Value: expectedUser.phoneNumber },
-      { Name: 'email', Value: expectedUser.email },
-      { Name: 'email_verified', Value: `${expectedUser.emailVerified}` },
+  mockCognitoIdentityProviderClientClient.on(ListUsersCommand, {
+    UserPoolId: userPoolId,
+    Filter: `sub = \"${expectedUser.sub}\"`,
+  }).resolves({
+    Users: [
+      {
+        Username: expectedUser.sub,
+        Attributes: [
+          { Name: 'sub', Value: expectedUser.sub },
+          { Name: 'name', Value: expectedUser.name },
+          { Name: 'phone_number', Value: expectedUser.phoneNumber },
+          { Name: 'email', Value: expectedUser.email },
+          { Name: 'email_verified', Value: `${expectedUser.emailVerified}` },
+        ],
+        UserStatus: expectedUser.status,
+        Enabled: expectedUser.enabled,
+        MFAOptions: undefined,
+        UserCreateDate: expectedUser.createdAt,
+        UserLastModifiedDate: expectedUser.updatedAt,
+      },
     ],
-    UserMFASettingList: undefined,
-    UserStatus: expectedUser.status,
-    Enabled: expectedUser.enabled,
-    MFAOptions: undefined,
-    PreferredMfaSetting: undefined,
-    UserCreateDate: expectedUser.createdAt,
-    UserLastModifiedDate: expectedUser.updatedAt,
   });
   const request = new RestApi.Request({
     requestContext: {
       identity: {
         cognitoAuthenticationType: 'authenticated',
-        cognitoAuthenticationProvider: `cognito-idp.region.amazonaws.com/region_id,cognito-idp.region.amazonaws.com/region_id:CognitoSignIn:${expectedUser.sub}`,
+        cognitoAuthenticationProvider: `cognito-idp.region.amazonaws.com/${userPoolId},cognito-idp.region.amazonaws.com/${userPoolId}:CognitoSignIn:${expectedUser.sub}`,
       },
     },
   });

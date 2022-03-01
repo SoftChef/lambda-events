@@ -1,7 +1,7 @@
 import {
   CognitoIdentityProviderClient,
-  AdminGetUserCommand,
-  AdminGetUserCommandOutput,
+  ListUsersCommand,
+  ListUsersCommandOutput,
 } from '@aws-sdk/client-cognito-identity-provider';
 import * as Joi from 'joi';
 import {
@@ -206,15 +206,16 @@ function getCognitoUser(userPoolId: string, username: string): Promise<{ [key: s
     let user: { [key: string]: any } = {};
     const cognitoIdentityProviderClient = new CognitoIdentityProviderClient({});
     cognitoIdentityProviderClient.send(
-      new AdminGetUserCommand({
+      new ListUsersCommand({
         UserPoolId: userPoolId,
-        Username: username,
+        Filter: `sub = \"${username}\"`,
       }),
-    ).then((result: AdminGetUserCommandOutput) => {
-      user.username = result.Username;
-      user.enabled = result.Enabled;
-      user.status = result.UserStatus;
-      for (const attribute of result.UserAttributes!) {
+    ).then((result: ListUsersCommandOutput) => {
+      const firstUser = result.Users!.shift()!;
+      user.username = firstUser.Username;
+      user.enabled = firstUser.Enabled;
+      user.status = firstUser.UserStatus;
+      for (const attribute of firstUser.Attributes!) {
         Object.assign(user, {
           [attribute.Name!]: attribute.Value,
         });
