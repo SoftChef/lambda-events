@@ -1,7 +1,7 @@
 import {
   CognitoIdentityProviderClient,
-  AdminGetUserCommand,
-  AdminGetUserCommandOutput,
+  ListUsersCommand,
+  ListUsersCommandOutput,
 } from '@aws-sdk/client-cognito-identity-provider';
 import * as Joi from 'joi';
 import {
@@ -134,8 +134,8 @@ export class RestApiRequest {
         if (authenticated === 'authenticated') {
           const [_authProvider, userPoolId, userSub] = identityString.match(/^[\w.-]*\/([\w-_]*):CognitoSignIn:([\w-]*)/) ?? [];
           getCognitoUser(userPoolId, userSub).then(resolve).catch((error) => {
-            console.log(error)
-            resolve(null)
+            console.log(error);
+            resolve(null);
           });
         } else {
           resolve(null);
@@ -144,8 +144,8 @@ export class RestApiRequest {
         if (identity.cognitoAuthenticationType === 'authenticated') {
           const [_authProvider, userPoolId, userSub] = (identity.cognitoAuthenticationProvider ?? '').match(/^.*,[\w.-]*\/([\w-_]*):CognitoSignIn:([\w-]*)/) ?? [];
           getCognitoUser(userPoolId, userSub).then(resolve).catch((error) => {
-            console.log(error)
-            resolve(null)
+            console.log(error);
+            resolve(null);
           });
         } else {
           resolve(null);
@@ -206,15 +206,16 @@ function getCognitoUser(userPoolId: string, username: string): Promise<{ [key: s
     let user: { [key: string]: any } = {};
     const cognitoIdentityProviderClient = new CognitoIdentityProviderClient({});
     cognitoIdentityProviderClient.send(
-      new AdminGetUserCommand({
+      new ListUsersCommand({
         UserPoolId: userPoolId,
-        Username: username,
+        Filter: `sub = \"${username}\"`,
       }),
-    ).then((result: AdminGetUserCommandOutput) => {
-      user.username = result.Username;
-      user.enabled = result.Enabled;
-      user.status = result.UserStatus;
-      for (const attribute of result.UserAttributes!) {
+    ).then((result: ListUsersCommandOutput) => {
+      const output = result.Users!.shift()!;
+      user.username = output.Username;
+      user.enabled = output.Enabled;
+      user.status = output.UserStatus;
+      for (const attribute of output.Attributes!) {
         Object.assign(user, {
           [attribute.Name!]: attribute.Value,
         });
