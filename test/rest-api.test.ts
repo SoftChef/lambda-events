@@ -1,5 +1,5 @@
 import {
-  AdminGetUserCommand,
+  ListUsersCommand,
   CognitoIdentityProviderClient,
 } from '@aws-sdk/client-cognito-identity-provider';
 import {
@@ -194,22 +194,24 @@ test('Verify get user with Cognito', async () => {
 
 test('Verify get user with AWS_IAM(authorizer)', async () => {
   const mockCognitoIdentityProviderClientClient = mockClient(CognitoIdentityProviderClient);
-  mockCognitoIdentityProviderClientClient.on(AdminGetUserCommand).resolves({
-    Username: expectedUser.sub,
-    UserAttributes: [
-      { Name: 'sub', Value: expectedUser.sub },
-      { Name: 'name', Value: expectedUser.name },
-      { Name: 'phone_number', Value: expectedUser.phoneNumber },
-      { Name: 'email', Value: expectedUser.email },
-      { Name: 'email_verified', Value: `${expectedUser.emailVerified}` },
+  mockCognitoIdentityProviderClientClient.on(ListUsersCommand).resolves({
+    Users: [
+      {
+        Username: expectedUser.sub,
+        Attributes: [
+          { Name: 'sub', Value: expectedUser.sub },
+          { Name: 'name', Value: expectedUser.name },
+          { Name: 'phone_number', Value: expectedUser.phoneNumber },
+          { Name: 'email', Value: expectedUser.email },
+          { Name: 'email_verified', Value: `${expectedUser.emailVerified}` },
+        ],
+        UserStatus: expectedUser.status,
+        Enabled: expectedUser.enabled,
+        MFAOptions: undefined,
+        UserCreateDate: expectedUser.createdAt,
+        UserLastModifiedDate: expectedUser.updatedAt,
+      },
     ],
-    UserMFASettingList: undefined,
-    UserStatus: expectedUser.status,
-    Enabled: expectedUser.enabled,
-    MFAOptions: undefined,
-    PreferredMfaSetting: undefined,
-    UserCreateDate: expectedUser.createdAt,
-    UserLastModifiedDate: expectedUser.updatedAt,
   });
   const request = new RestApi.Request({
     requestContext: {
@@ -242,22 +244,24 @@ test('Verify get user with AWS_IAM(authorizer)', async () => {
 
 test('Verify get user with AWS_IAM(identity)', async () => {
   const mockCognitoIdentityProviderClientClient = mockClient(CognitoIdentityProviderClient);
-  mockCognitoIdentityProviderClientClient.on(AdminGetUserCommand).resolves({
-    Username: expectedUser.sub,
-    UserAttributes: [
-      { Name: 'sub', Value: expectedUser.sub },
-      { Name: 'name', Value: expectedUser.name },
-      { Name: 'phone_number', Value: expectedUser.phoneNumber },
-      { Name: 'email', Value: expectedUser.email },
-      { Name: 'email_verified', Value: `${expectedUser.emailVerified}` },
+  mockCognitoIdentityProviderClientClient.on(ListUsersCommand).resolves({
+    Users: [
+      {
+        Username: expectedUser.sub,
+        Attributes: [
+          { Name: 'sub', Value: expectedUser.sub },
+          { Name: 'name', Value: expectedUser.name },
+          { Name: 'phone_number', Value: expectedUser.phoneNumber },
+          { Name: 'email', Value: expectedUser.email },
+          { Name: 'email_verified', Value: `${expectedUser.emailVerified}` },
+        ],
+        UserStatus: expectedUser.status,
+        Enabled: expectedUser.enabled,
+        MFAOptions: undefined,
+        UserCreateDate: expectedUser.createdAt,
+        UserLastModifiedDate: expectedUser.updatedAt,
+      },
     ],
-    UserMFASettingList: undefined,
-    UserStatus: expectedUser.status,
-    Enabled: expectedUser.enabled,
-    MFAOptions: undefined,
-    PreferredMfaSetting: undefined,
-    UserCreateDate: expectedUser.createdAt,
-    UserLastModifiedDate: expectedUser.updatedAt,
   });
   const request = new RestApi.Request({
     requestContext: {
