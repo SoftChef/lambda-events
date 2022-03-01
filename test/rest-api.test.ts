@@ -194,7 +194,10 @@ test('Verify get user with Cognito', async () => {
 
 test('Verify get user with AWS_IAM(authorizer)', async () => {
   const mockCognitoIdentityProviderClientClient = mockClient(CognitoIdentityProviderClient);
-  mockCognitoIdentityProviderClientClient.on(ListUsersCommand).resolves({
+  mockCognitoIdentityProviderClientClient.on(ListUsersCommand, {
+    UserPoolId: 'region_id',
+    Filter: `sub = \"${expectedUser.sub}\"`,
+  }).resolves({
     Users: [
       {
         Username: expectedUser.sub,
@@ -244,7 +247,10 @@ test('Verify get user with AWS_IAM(authorizer)', async () => {
 
 test('Verify get user with AWS_IAM(identity)', async () => {
   const mockCognitoIdentityProviderClientClient = mockClient(CognitoIdentityProviderClient);
-  mockCognitoIdentityProviderClientClient.on(ListUsersCommand).resolves({
+  mockCognitoIdentityProviderClientClient.on(ListUsersCommand, {
+    UserPoolId: 'region_id',
+    Filter: `sub = \"${expectedUser.sub}\"`,
+  }).resolves({
     Users: [
       {
         Username: expectedUser.sub,

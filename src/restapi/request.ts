@@ -211,11 +211,11 @@ function getCognitoUser(userPoolId: string, username: string): Promise<{ [key: s
         Filter: `sub = \"${username}\"`,
       }),
     ).then((result: ListUsersCommandOutput) => {
-      const output = result.Users!.shift()!;
-      user.username = output.Username;
-      user.enabled = output.Enabled;
-      user.status = output.UserStatus;
-      for (const attribute of output.Attributes!) {
+      const firstUser = result.Users!.shift()!;
+      user.username = firstUser.Username;
+      user.enabled = firstUser.Enabled;
+      user.status = firstUser.UserStatus;
+      for (const attribute of firstUser.Attributes!) {
         Object.assign(user, {
           [attribute.Name!]: attribute.Value,
         });
