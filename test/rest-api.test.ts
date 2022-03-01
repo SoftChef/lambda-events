@@ -19,6 +19,8 @@ const expectedUser = {
   updatedAt: new Date(),
 };
 
+const userPoolId = 'ap-northeast-2_er781dw';
+
 test('Verify request parameter with path parameters expect success', () => {
   const request = new RestApi.Request({
     pathParameters: {
@@ -195,7 +197,7 @@ test('Verify get user with Cognito', async () => {
 test('Verify get user with AWS_IAM(authorizer)', async () => {
   const mockCognitoIdentityProviderClientClient = mockClient(CognitoIdentityProviderClient);
   mockCognitoIdentityProviderClientClient.on(ListUsersCommand, {
-    UserPoolId: 'region_id',
+    UserPoolId: userPoolId,
     Filter: `sub = \"${expectedUser.sub}\"`,
   }).resolves({
     Users: [
@@ -224,7 +226,7 @@ test('Verify get user with AWS_IAM(authorizer)', async () => {
             amr: [
               'authenticated',
               'cognito-idp.region.amazonaws.com/region_id',
-              `cognito-idp.region.amazonaws.com/region_id:CognitoSignIn:${expectedUser.sub}`,
+              `cognito-idp.region.amazonaws.com/${userPoolId}:CognitoSignIn:${expectedUser.sub}`,
             ],
           },
         },
@@ -248,7 +250,7 @@ test('Verify get user with AWS_IAM(authorizer)', async () => {
 test('Verify get user with AWS_IAM(identity)', async () => {
   const mockCognitoIdentityProviderClientClient = mockClient(CognitoIdentityProviderClient);
   mockCognitoIdentityProviderClientClient.on(ListUsersCommand, {
-    UserPoolId: 'region_id',
+    UserPoolId: userPoolId,
     Filter: `sub = \"${expectedUser.sub}\"`,
   }).resolves({
     Users: [
@@ -273,7 +275,7 @@ test('Verify get user with AWS_IAM(identity)', async () => {
     requestContext: {
       identity: {
         cognitoAuthenticationType: 'authenticated',
-        cognitoAuthenticationProvider: `cognito-idp.region.amazonaws.com/region_id,cognito-idp.region.amazonaws.com/region_id:CognitoSignIn:${expectedUser.sub}`,
+        cognitoAuthenticationProvider: `cognito-idp.region.amazonaws.com/region_id,cognito-idp.region.amazonaws.com/${userPoolId}:CognitoSignIn:${expectedUser.sub}`,
       },
     },
   });
