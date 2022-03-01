@@ -225,7 +225,7 @@ test('Verify get user with AWS_IAM(authorizer)', async () => {
           cognitoIdentity: {
             amr: [
               'authenticated',
-              'cognito-idp.region.amazonaws.com/region_id',
+              `cognito-idp.region.amazonaws.com/${userPoolId}`,
               `cognito-idp.region.amazonaws.com/${userPoolId}:CognitoSignIn:${expectedUser.sub}`,
             ],
           },
@@ -275,7 +275,7 @@ test('Verify get user with AWS_IAM(identity)', async () => {
     requestContext: {
       identity: {
         cognitoAuthenticationType: 'authenticated',
-        cognitoAuthenticationProvider: `cognito-idp.region.amazonaws.com/region_id,cognito-idp.region.amazonaws.com/${userPoolId}:CognitoSignIn:${expectedUser.sub}`,
+        cognitoAuthenticationProvider: `cognito-idp.region.amazonaws.com/${userPoolId},cognito-idp.region.amazonaws.com/${userPoolId}:CognitoSignIn:${expectedUser.sub}`,
       },
     },
   });
