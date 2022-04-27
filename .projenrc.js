@@ -18,6 +18,10 @@ const project = new typescript.TypeScriptAppProject({
     'joi',
     'semver',
     'sinon',
+    '@types/busboy',
+    'busboy',
+    '@types/lodash',
+    'lodash',
   ],
   devDeps: [
     'aws-sdk-client-mock',

@@ -80,6 +80,14 @@
       "type": "runtime"
     },
     {
+      "name": "@types/busboy",
+      "type": "runtime"
+    },
+    {
+      "name": "@types/lodash",
+      "type": "runtime"
+    },
+    {
       "name": "@types/semver",
       "type": "runtime"
     },
@@ -92,7 +100,15 @@
       "type": "runtime"
     },
     {
+      "name": "busboy",
+      "type": "runtime"
+    },
+    {
       "name": "joi",
+      "type": "runtime"
+    },
+    {
+      "name": "lodash",
       "type": "runtime"
     },
     {
