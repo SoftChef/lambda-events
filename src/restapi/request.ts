@@ -3,11 +3,11 @@ import {
   ListUsersCommand,
   ListUsersCommandOutput,
 } from '@aws-sdk/client-cognito-identity-provider';
+import busboy from 'busboy';
 import * as Joi from 'joi';
 import {
   extensions,
 } from './validator';
-
 /**
  * API Gateway Request
  */
@@ -19,6 +19,7 @@ export class RestApiRequest {
     queryStringParameters?: { [key: string]: string };
     body?: { [key: string]: any };
     requestContext?: { [key: string]: any };
+    isBase64Encoded?: boolean;
   };
 
   public readonly headers: {
@@ -40,13 +41,32 @@ export class RestApiRequest {
   public readonly requestContext: {
     [key: string]: any;
   };
+  public readonly isMultipartFormData: boolean;
 
-  constructor(event?: { [key: string]: any }) {
+  public readonly busboy;
+
+  public readonly files: {
+    [key: string]: any;
+  };
+
+
+  constructor(event?: { [key: string]: any } ) {
     this.event = (event ?? {});
     this.headers = this.event.headers ?? {};
     this.parameters = this.event.pathParameters ?? {};
     this.queries = this.event.queryStringParameters ?? {};
     this.requestContext = this.event.requestContext ?? {};
+    this.isMultipartFormData = /^multipart\/form-data.*$/.test(this.headers['Content-Type'] || this.headers['content-type']);
+    this.files = {};
+
+
+    if (this.isMultipartFormData) {
+      this.busboy = busboy({
+        headers: {
+          'content-type': this.headers['Content-Type'] || this.headers['content-type'],
+        },
+      });
+    }
     if (typeof this.event.body === 'string') {
       try {
         this.body = JSON.parse(this.event.body) ?? {};
@@ -107,6 +127,13 @@ export class RestApiRequest {
     }
     return false;
   }
+  async file(key: string) {
+    const processIsFinished = await this.processFiles();
+    if (processIsFinished) {
+      return Promise.resolve(this.files[key].binary || null);
+    }
+  }
+
   header(key: string): string {
     return this.headers[key] ?? null;
   }
@@ -198,6 +225,41 @@ export class RestApiRequest {
       error: details.length > 0,
       details: details,
     };
+  }
+  processFiles(): Promise<boolean | null> {
+    return new Promise((resolve, reject) => {
+      try {
+        this.busboy?.on('field', (fieldName: any, value: any) => {
+          this.body[fieldName] = value;
+        });
+        this.busboy?.on('file', (fieldName: any, file: any, filename: any, encoding: any, mimeType: any) => {
+          if (!this.files[fieldName]) {
+            this.files[fieldName] = {
+              binary: Buffer.from(''),
+              filename,
+              encoding,
+              mimeType,
+            };
+          }
+          file.on('data', (data: any) => {
+            this.files[fieldName].binary = Buffer.concat([this.files[fieldName].binary, data]);
+          });
+          file.on('end', () => { });
+        });
+        this.busboy?.on('error', error => {
+          return reject(
+            new Error(`Parse error: ${error}`),
+          );
+        });
+        this.busboy?.on('finish', () => {
+          resolve(true);
+        });
+        this.busboy?.write(this.event.body, this.event.isBase64Encoded ? 'base64': 'binary');
+        this.busboy?.end();
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 }
 

@@ -5,6 +5,7 @@ import {
 import {
   mockClient,
 } from 'aws-sdk-client-mock';
+import { range, shuffle } from 'lodash';
 import { RestApi } from '../src';
 
 const expectedUser = {
@@ -119,6 +120,30 @@ test('Verify request has key expect success', () => {
   expect(
     request.has('xxx'),
   ).toEqual(false);
+});
+
+it('Verifies request get file', async() => {
+  const boundary = '----WebKitFormBoundary7MA4YWxkTrZu0gW';
+  const filename = 'file';
+  const expectedContent = Buffer.from(
+    shuffle(
+      range(0, 255),
+    ),
+  );
+  const body = Buffer.concat([
+    Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="${filename}"; filename="test.txt"\r\nContent-Type: "application/protobuf"\r\n\r\n`),
+    expectedContent,
+    Buffer.from(`\r\n--${boundary}--`),
+  ]).toString('base64');
+  const request = new RestApi.Request({
+    headers: {
+      'content-type': `multipart/form-data; boundary=${boundary}`,
+    },
+    body: body,
+    isBase64Encoded: true,
+  });
+  const image = await request.file(filename);
+  expect(image).toEqual(expectedContent);
 });
 
 test('Verify request header expect success', () => {
