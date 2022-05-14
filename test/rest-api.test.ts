@@ -5,8 +5,13 @@ import {
 import {
   mockClient,
 } from 'aws-sdk-client-mock';
-import { range, shuffle } from 'lodash';
-import { RestApi } from '../src';
+import {
+  range,
+  shuffle,
+} from 'lodash';
+import {
+  RestApi,
+} from '../src';
 
 const expectedUser = {
   sub: '461b4f73-8aed-4fcd-bdc3-7da9711e2d1d',

@@ -6,6 +6,16 @@ import {
 import busboy from 'busboy';
 import * as Joi from 'joi';
 import {
+  ValidationOptions,
+} from 'joi';
+import {
+  Parameters,
+  validate,
+} from './models';
+import {
+  PathParameters,
+} from './models/pathParameters';
+import {
   extensions,
 } from './validator';
 /**
@@ -17,26 +27,18 @@ export class RestApiRequest {
     headers?: { [key: string]: string };
     pathParameters?: { [key: string]: string };
     queryStringParameters?: { [key: string]: string };
-    body?: { [key: string]: any };
+    body?: { [key: string]: any } | string;
     requestContext?: { [key: string]: any };
     isBase64Encoded?: boolean;
   };
 
-  public readonly headers: {
-    [key: string]: string;
-  };
+  public readonly headers: Parameters;
 
-  public readonly parameters: {
-    [key: string]: string;
-  };
+  public readonly parameters: PathParameters;
 
-  public readonly queries: {
-    [key: string]: string;
-  };
+  public readonly queries: Parameters;
 
-  public readonly body: {
-    [key: string]: any;
-  };
+  public readonly body: Parameters;
 
   public readonly requestContext: {
     [key: string]: any;
@@ -49,95 +51,79 @@ export class RestApiRequest {
     [key: string]: any;
   };
 
-
   constructor(event?: { [key: string]: any } ) {
     this.event = (event ?? {});
-    this.headers = this.event.headers ?? {};
-    this.parameters = this.event.pathParameters ?? {};
-    this.queries = this.event.queryStringParameters ?? {};
+    this.headers = new Parameters(this.event.headers);
+    this.parameters = new PathParameters(this.event.pathParameters);
+    this.queries = new Parameters(this.event.queryStringParameters);
     this.requestContext = this.event.requestContext ?? {};
-    this.isMultipartFormData = /^multipart\/form-data.*$/.test(this.headers['Content-Type'] || this.headers['content-type']);
+    const contentType = this.headers.get('Content-Type') || this.headers.get('content-type');
+    this.isMultipartFormData = /^multipart\/form-data.*$/.test(contentType);
     this.files = {};
-
 
     if (this.isMultipartFormData) {
       this.busboy = busboy({
         headers: {
-          'content-type': this.headers['Content-Type'] || this.headers['content-type'],
+          'content-type': contentType,
         },
       });
     }
+
     if (typeof this.event.body === 'string') {
       try {
-        this.body = JSON.parse(this.event.body) ?? {};
+        this.body = new Parameters(JSON.parse(this.event.body));
       } catch (error) {
-        this.body = {};
+        this.body = new Parameters(undefined);
       }
+    } else if (this.event.body) {
+      this.body =new Parameters(this.event.body);
     } else {
-      this.body = this.event.body ?? {};
+      this.body = new Parameters(undefined);
     }
+
     for (const extension of extensions) {
       Joi.extend(extension);
     }
   }
-
-  public parameter(key: string): string {
-    let parameter = this.parameters[key] ?? null;
-    if (parameter) {
-      parameter = decodeURI(parameter);
-    }
-    return parameter;
+  public has(key: string): boolean {
+    return this.queries.has(key) || this.body.has(key) || false;
   }
-
+  public parameter(key: string): string | null {
+    return this.parameters.get(key) ?? null;
+  }
   public get(key: string, defaultValue?: any): any {
-    let result = this.queries[key];
-    if (result === undefined) {
-      result = defaultValue ?? null;
-    }
-    return result;
+    return this.queries.get(key, defaultValue) ?? defaultValue;
   }
-  input(key: string, defaultValue?: any): any {
-    let result = this.body[key];
-    if (result === undefined) {
-      result = this.queries[key];
+  public inputs(keys: string[]): { [key: string]: any } {
+    let queryResult = this.queries.gets(keys);
+    let bodyResult = this.body.gets(keys);
+    if (bodyResult) {
+      bodyResult = filterEntries(bodyResult, ([_, value]) => value !== null);
     }
-    if (result === undefined) {
-      result = defaultValue ?? null;
-    }
-    return result;
+    return Object.assign({}, queryResult, bodyResult);
   }
-  inputs(keys: string[]): { [key: string]: any } {
-    const inputs: {
-      [key: string]: any;
-    } = {};
-    for (let key of keys) {
-      let input = this.input(key);
-      if (input === null) {
-        input = this.get(key);
-      }
-      inputs[key] = input;
-    }
-    return inputs;
+  public input(key: string, defaultValue: any = null): any {
+    return this.queries.get(key, defaultValue) ??
+      this.body.get(key, defaultValue) ??
+      defaultValue;
   }
-  has(key: string): boolean {
-    if (this.queries[key] !== undefined) {
-      return true;
-    } else if (this.body[key] !== undefined) {
-      return true;
-    }
-    return false;
+  public validate(
+    keysProvider: (Joi: Joi.Root) => { [key: string]: Joi.Schema },
+    options: Omit<ValidationOptions, 'abortEarly'> = {},
+  ) {
+    const inputs = this.inputs(Object.keys(keysProvider(Joi)));
+    return validate(inputs, keysProvider, options);
   }
-  async file(key: string) {
+  public header(key: string): string | null {
+    return this.headers.get(key) ?? null;
+  }
+  public async file(key: string) {
     const processIsFinished = await this.processFiles();
     if (processIsFinished) {
       return Promise.resolve(this.files[key].binary || null);
     }
   }
-
-  header(key: string): string {
-    return this.headers[key] ?? null;
-  }
-  user(): Promise<{ [key: string]: any } | null> {
+  public user(): Promise<{ [key: string]: any } | null> {
     return new Promise((resolve, _reject): void => {
       const requestContext = this.requestContext ?? {};
       const authorizer = requestContext.authorizer ?? {};
@@ -182,55 +168,11 @@ export class RestApiRequest {
       }
     });
   }
-
-  validate(keysProvider: (Joi: Joi.Root) => any, options: Object = {}): {
-    error: boolean;
-    details: {
-      key: string;
-      label: string;
-      value: any;
-      message: string;
-    }[];
-  } {
-    const keys: {
-      [key: string]: Joi.Schema<any>;
-    } = keysProvider(Joi);
-    const schema: Joi.ObjectSchema<any> = Joi.object().keys(keys);
-    const result: Joi.ValidationResult = schema.validate(
-      this.inputs(
-        Object.keys(keys),
-      ),
-      {
-        abortEarly: false,
-        ...options,
-      },
-    );
-    let details: {
-      key: string;
-      label: string;
-      value: any;
-      message: string;
-    }[] = [];
-    if (result.error) {
-      for (let detail of result.error.details) {
-        details.push({
-          key: detail.context?.key ?? '',
-          label: detail.context?.label ?? '',
-          value: detail.context?.value ?? null,
-          message: detail.message,
-        });
-      }
-    }
-    return {
-      error: details.length > 0,
-      details: details,
-    };
-  }
-  processFiles(): Promise<boolean | null> {
+  public processFiles(): Promise<boolean | null> {
     return new Promise((resolve, reject) => {
       try {
         this.busboy?.on('field', (fieldName: any, value: any) => {
-          this.body[fieldName] = value;
+          this.body.set(fieldName, value);
         });
         this.busboy?.on('file', (fieldName: any, file: any, filename: any, encoding: any, mimeType: any) => {
           if (!this.files[fieldName]) {
@@ -285,4 +227,8 @@ function getCognitoUser(userPoolId: string, username: string): Promise<{ [key: s
       resolve(user);
     }).catch(reject);
   });
+}
+
+function filterEntries(obj: { [key: string]: any }, cb: ([key, value]: [string, any]) => boolean): any {
+  return Object.fromEntries(Object.entries(obj).filter(cb));
 }
