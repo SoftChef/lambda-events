@@ -50,7 +50,7 @@
     "@types/busboy": "^1.5.0",
     "@types/lodash": "^4.14.182",
     "@types/semver": "^7.3.10",
-    "@types/sinon": "^10.0.11",
+    "@types/sinon": "^10.0.12",
     "axios": "^0.27.2",
     "busboy": "^1.6.0",
     "joi": "^17.6.0",
