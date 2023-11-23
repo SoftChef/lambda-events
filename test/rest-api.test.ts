@@ -1,6 +1,7 @@
 import {
   ListUsersCommand,
   CognitoIdentityProviderClient,
+  UserStatusType,
 } from '@aws-sdk/client-cognito-identity-provider';
 import {
   mockClient,
@@ -15,7 +16,7 @@ const expectedUser = {
   email: 'test@softchef.com',
   emailVerified: true,
   enabled: true,
-  status: 'CONFIRMED',
+  status: UserStatusType.CONFIRMED,
   createdAt: new Date(),
   updatedAt: new Date(),
 };

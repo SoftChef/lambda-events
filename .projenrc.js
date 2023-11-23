@@ -12,18 +12,19 @@ const project = new typescript.TypeScriptAppProject({
   entrypoint: 'lib/index.js',
   deps: [
     '@aws-sdk/client-cognito-identity-provider',
+    '@types/busboy',
+    '@types/lodash',
     '@types/semver',
     '@types/sinon',
     'axios',
     'joi',
     'semver',
     'sinon',
-    '@types/busboy',
     'busboy',
-    '@types/lodash',
     'lodash',
   ],
   devDeps: [
+    '@sinonjs/fake-timers@6',
     'aws-sdk-client-mock',
   ],
   depsUpgradeOptions: {
